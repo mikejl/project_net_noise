@@ -72,9 +72,9 @@ fi
 # Capture
 /usr/bin/tshark -i $IDEV -a duration:$SR -w - > $OUTDIR/$OUTFILE
 
-# Generate binary with xxd
+# Generate binary with xxd (binary is space sep 8 bit, hexstack is used to gen binstack for analysis
 /usr/bin/xxd -b $OUTDIR/$OUTFILE | awk {'print $2" "$3" "$4" "$5" "$6" "$7'} > $OUTDIR/$OUTFILEB
-/usr/bin/xxd -ps $OUTDIR/$OUTFILE $OUTDIR/$OUTFILEHEXSTACK
+/usr/bin/xxd -ps $OUTDIR/$OUTFILE | tr -d \\n > $OUTDIR/$OUTFILEHEXSTACK
 
 # Generate raw bits
 /bin/echo "Generating raw binary stack.."
