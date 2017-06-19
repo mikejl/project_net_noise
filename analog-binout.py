@@ -69,9 +69,9 @@ GPIO.setup(SPIMISO, GPIO.IN)
 GPIO.setup(SPICLK, GPIO.OUT)
 GPIO.setup(SPICS, GPIO.OUT)
 
-# 10k and LDR Voltage divider connected to adc #0
-ldr_adc = 0
-
+# adc #0 #1
+ldr_adc0 = 0
+ldr_adc1 = 1
 
 # Open file for writing
 outf = open(binfile, "w")
@@ -80,14 +80,16 @@ outf = open(binfile, "w")
 counter = int(rectime)
 
 while (counter > 0):
-        analog_read = readadc(ldr_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
-        binout = '{:08b}'.format(analog_read)
-        hexout = '{:02x}'.format(analog_read)
-        print "Analog: ", analog_read
-        print "Binary: ", binout
-        print "Hex: ", hexout
-        outf.write(binout)
-        #outf.write(hexout)
+        analog_read0 = readadc(ldr_adc0, SPICLK, SPIMOSI, SPIMISO, SPICS)
+        binout0 = '{:08b}'.format(analog_read0)
+        hexout0 = '{:02x}'.format(analog_read0)
+        print "ADC0 ", "Analog: ", analog_read0, " Binary: ", binout0, " Hex: ", hexout0
+        outf.write(binout0)
+        analog_read1 = readadc(ldr_adc1, SPICLK, SPIMOSI, SPIMISO, SPICS)
+        binout1 = '{:08b}'.format(analog_read1)
+        hexout1 = '{:02x}'.format(analog_read1)
+        print "ADC1 ", "Analog: ", analog_read1, " Binary: ", binout1, " Hex: ", hexout1
+        outf.write(binout1)
         counter -= 1
         #time.sleep(1) # 1 sec sleep for throttling / testing
 
@@ -107,8 +109,8 @@ print "Generate spectrogram and bitmap?"
 YN=raw_input("Y/N: ")
 if YN == "Y":
         subprocess.call(['/usr/bin/sox -V -t ima -r 44100 -e ima-adpcm test.out -e signed-integer -b16 test.wav'], shell=True)
-        subprocess.call(['/usr/bin/sox test.wav -n spectrogram'], shell=True)
-        subprocess.call(['/bin/cat test.out | ./make_bitmap2  250 250'], shell=True)
+        subprocess.call(['/usr/bin/sox test.wav -n rate 1k remix 1 trim 0 2 spectrogram -m -l'], shell=True)
+        subprocess.call(['/bin/cat test.out | ./make_bitmap2  500 500'], shell=True)
         print "test.out  spectrogram and bitmap generated in local dir"
 
 # Wrap-up
