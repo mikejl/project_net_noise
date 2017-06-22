@@ -19,8 +19,9 @@ DEBUG = 1
 GPIO.setwarnings(False)
 
 # Inputs
-rectime = sys.argv[1]
+#rectime = sys.argv[1]
 #binfile = sys.argv[2]
+rectime=raw_input("Number of cycles to capture: ")
 binfile = "test.out"
 
 # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
@@ -78,17 +79,18 @@ outf = open(binfile, "w")
 
 # Setup counter
 counter = int(rectime)
+print "Start"
 
 while (counter > 0):
         analog_read0 = readadc(ldr_adc0, SPICLK, SPIMOSI, SPIMISO, SPICS)
         binout0 = '{:08b}'.format(analog_read0)
-        hexout0 = '{:02x}'.format(analog_read0)
-        print "ADC0 ", "Analog: ", analog_read0, " Binary: ", binout0, " Hex: ", hexout0
+        #hexout0 = '{:02x}'.format(analog_read0)
+        #print "ADC0 ", "Analog: ", analog_read0, " Binary: ", binout0, " Hex: ", hexout0
         outf.write(binout0)
         analog_read1 = readadc(ldr_adc1, SPICLK, SPIMOSI, SPIMISO, SPICS)
         binout1 = '{:08b}'.format(analog_read1)
-        hexout1 = '{:02x}'.format(analog_read1)
-        print "ADC1 ", "Analog: ", analog_read1, " Binary: ", binout1, " Hex: ", hexout1
+        #hexout1 = '{:02x}'.format(analog_read1)
+        #print "ADC1 ", "Analog: ", analog_read1, " Binary: ", binout1, " Hex: ", hexout1
         outf.write(binout1)
         counter -= 1
         #time.sleep(1) # 1 sec sleep for throttling / testing
