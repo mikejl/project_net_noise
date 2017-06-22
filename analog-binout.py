@@ -3,15 +3,21 @@
 # Mike Libassi
 # 6/7/17
 #
-# in: time to record ADC binary values
-# out: outfile
+# in: Number of cycles of ADC binary values
+# out: outfile and stats
 #
 # #################################################
+from __future__ import division
 import time
 import os
 import sys
 import RPi.GPIO as GPIO
 import subprocess
+import math
+import scipy.special as spc
+import numpy
+
+
 
 # Mode setup
 GPIO.setmode(GPIO.BCM)
@@ -100,20 +106,57 @@ while (counter > 0):
 # close file
 outf.write('\n') # insert line feed
 outf.close()
-
+print "test.out generated"  
 
 # Generte bitmap and spectrogram files
 #/usr/bin/sox -V -t ima -r 44100 -e ima-adpcm $OUTDIR/$OUTFILE -e signed-integer -b16 $OUTDIR/$OUTFILEW
 #/usr/bin/sox $OUTDIR/$OUTFILEW -n spectrogram
 #cat test.out | ./make_bitmap2  250 250
 
-print "Generate spectrogram and bitmap?"
-YN=raw_input("Y/N: ")
-if YN == "Y":
-        subprocess.call(['/usr/bin/sox -V -t ima -r 44100 -e ima-adpcm test.out -e signed-integer -b16 test.wav'], shell=True)
-        subprocess.call(['/usr/bin/sox test.wav -n rate 1k remix 1 trim 0 2 spectrogram -m -l'], shell=True)
-        subprocess.call(['/bin/cat test.out | ./make_bitmap2  500 500'], shell=True)
-        print "test.out  spectrogram and bitmap generated in local dir"
+print "Generating spectrogram and bitmap"
+subprocess.call(['/usr/bin/sox -V -t ima -r 44100 -e ima-adpcm test.out -e signed-integer -b16 test.wav'], shell=True)
+subprocess.call(['/usr/bin/sox test.wav -n rate 1k remix 1 trim 0 2 spectrogram -m -l'], shell=True)
+subprocess.call(['/bin/cat test.out | ./make_bitmap2  500 500'], shell=True)
+print "Spectrogram and bitmap generated in local dir"
+
+count = 0
+zeros = 0
+ones = 0
+pct_zero = 0.
+pct_ones = 0.
+#sample_size=100
+
+infile = binfile
+
+with open(infile) as f:
+    bin_data = f.read()
+
+for char in bin_data:
+    if char == '0':
+        count = count - 1
+        zeros = zeros + 1
+    else:
+        count = count + 1
+        ones = ones + 1
+
+stacktotal = len(bin_data)    
+sobs = count / math.sqrt(stacktotal)
+pct_zero =  (zeros / stacktotal) * 100 
+pct_ones = (ones / stacktotal) * 100
+Out_pct_zeros = format(pct_zero, '.3f')
+Out_pct_ones = format(pct_ones, '.3f') 
+
+print"======================================================="
+print "Binay Stack size: ", stacktotal
+print "Sobs: ", sobs
+print "Count value (-1 if 0 and +1 if 1): ", count
+print "Zero total: ", zeros, " Ones total: ", ones
+print "% ones: ", Out_pct_ones, " % zeros: ", Out_pct_zeros
+print"======================================================="
+print "Running monobit testing.. see test_montobit.txt in local dir for results"
+subprocess.call(['/usr/bin/dieharder -f test.out -d 209 > test_monobit.txt'], shell=True)
+print "Done"
+
 
 # Wrap-up
 GPIO.cleanup
